@@ -1,4 +1,3 @@
-# %%
 """
 Configuration settings for the pipeline.
 Centralizes file paths, constants, and business rules.

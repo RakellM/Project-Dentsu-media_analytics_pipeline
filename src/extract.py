@@ -1,4 +1,3 @@
-# %%
 """
 Extraction layer for raw data files.
 Reads each source format and returns standardized Python data structures.
