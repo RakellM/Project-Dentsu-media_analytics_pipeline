@@ -1,4 +1,4 @@
-# Project-Dentsu-media_analytics_pipeline
+# Project Dentsu: Media Analytics Pipeline
 
 ## Setup
 1. Place raw data files in `data/raw/`:
@@ -55,6 +55,65 @@ media_analytics_pipeline/
 ### Ingestion Logic
 
 `extract.py` : Read raw files (NO changes made, just parsing)
+`transform.py` : 
 `load.py` : NEW: Load to SQLite with incremental logic + dedup check
 `sql/transforms.sql` : NEW: Transform raw → staged → modeled
 `sql/analysis_queries.sql` : Business questions
+
+
+
+## Project Status
+
+### 1. Extraction Layer ([`src/extract.py`](./src/extract.py))
+
+Reads all 4 raw data sources and returns standardized Python data structures.
+
+
+| Source | Format | Records | Key Parsing Logic |
+| --- | --- | --- | --- |
+| Meta Ads | CSV | 3,603 | Direct CSV read |
+| Google Ads | Newline-delimited JSON | 1,055 | Flattens nested campaign and metrics objects |
+| Store Visits | CSV | 2,300 | Direct CSV read |
+| Campaign Metadata | CSV | 24 | Direct CSV read |
+
+Design decisions:
+- Using `csv.DictReader` for simplicity, no external dependencies
+- JSON flattening happens at extraction so downstream layers receive consistent dicts
+- All raw values preserved as strings, type conversion happens in transform layer
+
+<br>
+
+### 2. Transformation Layer ([`src/transform.py`](./src/transform.py))
+
+**Campaign Metadata**
+- Strip whitespace from all text fields
+- Convert `budget_usd` from string to float
+- Flag missing budgets (`budget_available` = 0)
+- 9 out of 24 campaigns have missing budget (37.5%)
+
+**Store Visits**
+- Strip whitespace from text fields
+- Convert `attributed_visits` and `attribution_window_days` to integers
+- 15 distinct DMAs, date range Jan 1 - Jun 29, 2026
+
+**Meta Ads**
+- Strip whitespace from all text fields
+- Convert numeric fields to proper types (int/float)
+- Currency handling:
+    - Keep original currency and amount
+    - Flag missing currency (`currency_missing` = 1): 133 records
+    - No conversion in bronze layer: happens in SQL silver via exchange rate table
+    - Currency distribution: USD (3,318), CAD (95), GBP (57), missing (133)
+- Timestamp conversion: timestamp_pst → timestamp_utc (+8 hours)
+- Campaign names: kept as-is (original): resolution happens in SQL silver
+- Platform tag: `platform` = "meta"
+
+**Google Ads**
+- Strip whitespace from text fields
+- Convert numeric fields to proper types
+- Micros conversion: deferred to SQL silver, raw micros preserved in bronze
+- Duplicate handling: in progress
+    - Duplicate key: (`date`, `campaign_id`, `campaign_name`, `advertising_channel_type`)
+    - Strategy: Keep newest timestamp → if timestamps identical, keep max impressions
+    - Flag with `duplicate_combined` and `duplicate_count`
+
