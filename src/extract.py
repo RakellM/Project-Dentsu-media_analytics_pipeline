@@ -21,6 +21,7 @@ from config import (
 logger = logging.getLogger(__name__)
 
 # %%
+#---------- META_ADS
 def extract_meta_ads(file_path: Path = META_ADS_FILE) -> List[Dict[str, Any]]:
     """
     Extract Meta Ads daily performance data from CSV.
@@ -45,6 +46,7 @@ def extract_meta_ads(file_path: Path = META_ADS_FILE) -> List[Dict[str, Any]]:
 
 
 #%%
+#---------- GOOGLE_ADS
 def extract_google_ads(file_path: Path = GOOGLE_ADS_FILE) -> List[Dict[str, Any]]:
     """
     Extract Google Ads daily performance data from newline-delimited JSON.
@@ -71,7 +73,6 @@ def extract_google_ads(file_path: Path = GOOGLE_ADS_FILE) -> List[Dict[str, Any]
     return records
 
 
-# %%
 def _flatten_google_record(record: Dict[str, Any]) -> Dict[str, Any]:
     """
     Flatten nested Google Ads JSON into a flat dictionary.
@@ -122,6 +123,7 @@ def _flatten_google_record(record: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # %%
+#---------- STORE_VISITS
 def extract_store_visits(file_path: Path = STORE_VISITS_FILE) -> List[Dict[str, Any]]:
     """
     Extract store visits data from CSV.
@@ -144,6 +146,7 @@ def extract_store_visits(file_path: Path = STORE_VISITS_FILE) -> List[Dict[str, 
 
 
 # %%
+#---------- CAMPAIGN_METADATA
 def extract_campaign_metadata(file_path: Path = CAMPAIGN_METADATA_FILE) -> List[Dict[str, Any]]:
     """
     Extract campaign metadata from CSV.
@@ -167,30 +170,48 @@ def extract_campaign_metadata(file_path: Path = CAMPAIGN_METADATA_FILE) -> List[
 
 
 # %%
+#---------- EXTRACT ALL
 def extract_all() -> Dict[str, List[Dict[str, Any]]]:
     """
-    Extract all data sources in one call.
+    Extract all available data sources.
     
     Returns:
-        Dictionary with keys: meta_ads, google_ads, store_visits, campaign_metadata
-        Each value is a list of dictionaries (raw rows)
+        Dictionary with source names as keys.
+        Missing sources are included with empty list and flagged.
     """
-    logger.info("Starting full data extraction from all sources")
+    logger.info("Starting extraction")
     
-    return {
-        "meta_ads": extract_meta_ads(),
-        "google_ads": extract_google_ads(),
-        "store_visits": extract_store_visits(),
-        "campaign_metadata": extract_campaign_metadata(),
+    extracted = {}
+    
+    sources = {
+        "meta_ads": (extract_meta_ads, META_ADS_FILE),
+        "google_ads": (extract_google_ads, GOOGLE_ADS_FILE),
+        "store_visits": (extract_store_visits, STORE_VISITS_FILE),
+        "campaign_metadata": (extract_campaign_metadata, CAMPAIGN_METADATA_FILE),
     }
+    
+    for source, (extractor, file_path) in sources.items():
+        try:
+            records = extractor(file_path)
+            extracted[source] = records
+            logger.info(f"  {source}: {len(records)} records extracted")
+        except FileNotFoundError:
+            logger.warning(f"  {source}: FILE NOT FOUND")
+            extracted[source] = []  # Empty list signals "no data"
+        except Exception as e:
+            logger.error(f"  {source}: EXTRACTION FAILED - {e}")
+            extracted[source] = []  # Empty list signals "failed"
+    
+    return extracted
 
 
 # %%
 def get_row_counts(data: Dict[str, List[Dict[str, Any]]]) -> Dict[str, int]:
     """
     Get row counts for each dataset.
-    Useful for logging and data quality checks.
+    Used for logging and data quality checks.
     """
     return {key: len(value) for key, value in data.items()}
+
 
 # %%
