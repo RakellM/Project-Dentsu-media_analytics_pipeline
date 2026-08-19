@@ -1,4 +1,3 @@
-# %%
 """
 Configuration settings for the pipeline.
 Centralizes file paths, constants, and business rules.
@@ -50,4 +49,6 @@ LOG_FILE = LOGS_DIR / "pipeline_run.log"
 
 # Output files
 ANSWERS_OUTPUT = OUTPUTS_DIR / "answers.md"
+
+# %%
 
