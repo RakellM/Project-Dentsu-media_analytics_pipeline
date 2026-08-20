@@ -2,6 +2,13 @@
 -- Calendar, Exchange Rates, DMA List
 -- ----------------------------------------------------------------------------
 
+-- Pipeline tracking table (also created in 02_silver_meta_ads.sql; safe to
+-- create here too since 01 runs first and gold-layer tracking below needs it).
+CREATE TABLE IF NOT EXISTS _pipeline_tracking (
+    table_name TEXT PRIMARY KEY,
+    last_processed_load_timestamp TEXT
+);
+
 -- Calendar Table (simple date dimension)
 CREATE TABLE IF NOT EXISTS ref_calendar (
     date TEXT PRIMARY KEY,
@@ -65,14 +72,14 @@ VALUES
     (2026, 4, 'USD', 'USD', 1.0, 'simulation'),
     (2026, 5, 'USD', 'USD', 1.0, 'simulation'),
     (2026, 6, 'USD', 'USD', 1.0, 'simulation'),
-    
+
     (2026, 1, 'CAD', 'USD', 0.74, 'simulation'),
     (2026, 2, 'CAD', 'USD', 0.74, 'simulation'),
     (2026, 3, 'CAD', 'USD', 0.73, 'simulation'),
     (2026, 4, 'CAD', 'USD', 0.73, 'simulation'),
     (2026, 5, 'CAD', 'USD', 0.72, 'simulation'),
     (2026, 6, 'CAD', 'USD', 0.72, 'simulation'),
-    
+
     (2026, 1, 'GBP', 'USD', 1.27, 'simulation'),
     (2026, 2, 'GBP', 'USD', 1.27, 'simulation'),
     (2026, 3, 'GBP', 'USD', 1.26, 'simulation'),
@@ -83,23 +90,72 @@ VALUES
 
 
 -- DMA List (reference for store visits)
-CREATE TABLE IF NOT EXISTS ref_dma_list AS
+-- FIX: was `CREATE TABLE IF NOT EXISTS ... AS SELECT`, which only populates
+-- the table on the very first run — after that it's a no-op and new DMAs
+-- appearing in raw_store_visits are silently never picked up.
+-- Now: real DDL + INSERT OR REPLACE (upsert on dma_code) gated by
+-- _pipeline_tracking, same pattern as the silver tables. Only rows loaded
+-- into raw_store_visits since the last tracked run are considered.
+CREATE TABLE IF NOT EXISTS ref_dma_list (
+    dma_code TEXT PRIMARY KEY,
+    dma_name TEXT
+);
+
+INSERT OR IGNORE INTO _pipeline_tracking (table_name, last_processed_load_timestamp)
+VALUES ('ref_dma_list', '1900-01-01');
+
+INSERT OR REPLACE INTO ref_dma_list (dma_code, dma_name)
 SELECT DISTINCT
     dma_code,
     dma_name
-FROM raw_store_visits;
+FROM raw_store_visits
+WHERE _load_timestamp > (
+    SELECT COALESCE(last_processed_load_timestamp, '1900-01-01')
+    FROM _pipeline_tracking
+    WHERE table_name = 'ref_dma_list'
+);
+
+UPDATE _pipeline_tracking
+SET last_processed_load_timestamp = (
+    SELECT MAX(_load_timestamp) FROM raw_store_visits
+)
+WHERE table_name = 'ref_dma_list'
+AND (SELECT MAX(_load_timestamp) FROM raw_store_visits) IS NOT NULL;
 
 
 -- Campaign List (reference for Campaign metadata)
-CREATE TABLE IF NOT EXISTS ref_campaign_list AS
+-- FIX: same issue and same fix pattern as ref_dma_list above.
+CREATE TABLE IF NOT EXISTS ref_campaign_list (
+    campaign_id TEXT PRIMARY KEY,
+    brand TEXT,
+    product_line TEXT,
+    region TEXT,
+    campaign_name_standardized TEXT
+);
+
+INSERT OR IGNORE INTO _pipeline_tracking (table_name, last_processed_load_timestamp)
+VALUES ('ref_campaign_list', '1900-01-01');
+
+INSERT OR REPLACE INTO ref_campaign_list (campaign_id, brand, product_line, region, campaign_name_standardized)
 SELECT DISTINCT
     campaign_id,
     brand,
     product_line,
     region,
-    -- Standardized name (source of truth)
     brand || '_' || product_line || '_' || region AS campaign_name_standardized
-FROM raw_campaign_metadata;
+FROM raw_campaign_metadata
+WHERE _load_timestamp > (
+    SELECT COALESCE(last_processed_load_timestamp, '1900-01-01')
+    FROM _pipeline_tracking
+    WHERE table_name = 'ref_campaign_list'
+);
+
+UPDATE _pipeline_tracking
+SET last_processed_load_timestamp = (
+    SELECT MAX(_load_timestamp) FROM raw_campaign_metadata
+)
+WHERE table_name = 'ref_campaign_list'
+AND (SELECT MAX(_load_timestamp) FROM raw_campaign_metadata) IS NOT NULL;
 
 
 
@@ -122,7 +178,7 @@ INSERT OR IGNORE INTO ref_dma_region_map (dma_code, dma_name, mapped_region) VAL
     ('528', 'Miami-Ft. Lauderdale', 'East'),
     ('539', 'Tampa-St. Petersburg', 'East'),
     ('602', 'Chicago', 'East'),
-    
+
     -- West Coast
     ('618', 'Houston', 'West'),
     ('623', 'Dallas-Ft. Worth', 'West'),
