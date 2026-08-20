@@ -225,7 +225,7 @@ def transform_google_ads(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     # Step 2: Deduplicate
     deduplicated = _deduplicate_google_records(cleaned)
     
-    logger.info(f"Transformed {len(cleaned)} Google Ads records → {len(deduplicated)} after deduplication")
+    logger.info(f"Transformed {len(cleaned)} Google Ads records -> {len(deduplicated)} after deduplication")
     return deduplicated
 
 

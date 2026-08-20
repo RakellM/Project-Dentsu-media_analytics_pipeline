@@ -1,5 +1,6 @@
-# No external dependencies required.
 # Python 3.8+ standard library only.
 # SQLite3 is included with Python's standard library.
 
-pandas=3.0.5
+# Optional
+pandas=3.0.5          # internal analsysis and testing
+matplotlib=3.11.1     # chart generation

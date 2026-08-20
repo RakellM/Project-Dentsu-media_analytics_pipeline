@@ -184,7 +184,10 @@ fact_store_visits.date → dim_date.date
 
 **Campaign Metadata**
 - Missing budgets: 9 of 24 campaigns missing budget. Flagged with budget_available = 0
-
+- Budget Estimation Logic (Question 4)
+    - Daily average spend rate by product_line + region (from campaigns WITH budgets)
+    - Multiplied by campaign duration in days
+    - Flagged as 'ESTIMATED' vs 'ACTUAL'
 <br>
 
 ## Key Decisions & Tradeoffs
@@ -237,26 +240,40 @@ Production Monitoring Plan
 
 ## Analysis Results
 
+### 1. Blended CPA
+
+![CPA Trend](outputs/cpa_trend.png)
+
+> Only HomeBase as Brand
+> HomeBase blended CPA ranges from $44.39 to $47.20 across Jan–Jun 2026. 
+> CPA is stable around $45 with February highest ($47.20) and January lowest ($44.39)
+
+### 2. Spend Growth
+
+![Spend by month](outputs/spend_by_month.png)
+
+![WoW Spend Growth](outputs/wow_growth.png)
+
+> Top growth campaign: HomeBase_Seasonal_National (1033) with +67.03% WoW growth in week 23.
+
+### 3. Cost per Store Visits
+
+![Cost per Visit](outputs/cost_per_visit.png)
+
+> Cost per store visit ranges from $2.61 to $4.63. 
+> Efficient spend-to-visit relationship, with Q1 showing lower cost per visit.
+
+### 4. Campaign Eceeding Budget
+
+![Budget Compliance](outputs/budget_compliance.png)
 
 
-
-
-
-
-
+> 15 campaigns over budget (68% of 22 analyzed)
+> Highest overage: Campaign 1090 at 1156% of budget ($427K vs $37K)
+> 2 campaigns excluded due to no spend data (1156, 1251)
+> 7 campaigns within budget (5 of these have estimated budgets)
 
 ---
-
-### Ingestion Logic
-
-`extract.py` : Read raw files (NO changes made, just parsing)
-`transform.py` : 
-`load.py` : NEW: Load to SQLite with incremental logic + dedup check
-`sql/transforms.sql` : NEW: Transform raw → staged → modeled
-`sql/analysis_queries.sql` : Business questions
-
-
-<br>
 
 
 [Project Status](./ProjectStatus.md)
