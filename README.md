@@ -117,3 +117,38 @@ Design decisions:
     - Strategy: Keep newest timestamp → if timestamps identical, keep max impressions
     - Flag with `duplicate_combined` and `duplicate_count`
 
+
+<br>
+
+### 3. Load Layer ([`src/load.py`](./src/load.py))
+Loads transformed data into SQLite bronze tables with incremental logic.
+
+**File Metadata Check**
+- Compares file size and modified time against last successful ingestion
+- Unchanged files are skipped entirely (fast path)
+- Tracks ingestion history in _ingestion_log table
+
+**Primary Key Deduplication**
+
+| Table | Primary Key | 
+| --- | --- |
+| raw_meta_ads | (date, campaign_id, campaign_name, adset_id, ad_id, objective, placement) | 
+| raw_google_ads | (date, campaign_id, campaign_name, advertising_channel_type) | 
+| raw_store_visits | (date, dma_code) | 
+| raw_campaign_metadata | (campaign_id) | 
+
+
+**Test Results**
+- First load: all records inserted (3,603 + 1,028 + 2,300 + 24)
+- Second load: all sources skipped as "unchanged"
+- Ingestion log records every attempt with audit info
+
+```text
+\JobProject-Dentsu> py -m testing.7_test_load
+First load: {'meta_ads': {'status': 'success', 'inserted': 3603, 'skipped': 0}, 'google_ads': {'status': 'success', 'inserted': 1028, 'skipped': 0}, 'store_visits': {'status': 'success', 'inserted': 2300, 'skipped': 0}, 'campaign_metadata': {'status': 'success', 'inserted': 24, 'skipped': 0}}
+Second load: {'meta_ads': {'status': 'unchanged', 'inserted': 0, 'skipped': 3603}, 'google_ads': {'status': 'unchanged', 'inserted': 0, 'skipped': 1028}, 'store_visits': {'status': 'unchanged', 'inserted': 0, 'skipped': 2300}, 'campaign_metadata': {'status': 'unchanged', 'inserted': 0, 'skipped': 24}}
+{'id': 1, 'source_file': 'meta_ads_daily.csv', 'ingested_at': '2026-08-20 01:31:37', 'file_size_bytes': 536095, 'file_modified_time': '2026-05-22T11:55:39', 'records_loaded': 3603, 'records_skipped': 0, 'status': 'success'}
+{'id': 2, 'source_file': 'google_ads_daily.json', 'ingested_at': '2026-08-20 01:31:37', 'file_size_bytes': 332387, 'file_modified_time': '2026-05-22T11:55:39', 'records_loaded': 1028, 'records_skipped': 0, 'status': 'success'}
+{'id': 3, 'source_file': 'store_visits.csv', 'ingested_at': '2026-08-20 01:31:37', 'file_size_bytes': 82645, 'file_modified_time': '2026-05-22T11:55:39', 'records_loaded': 2300, 'records_skipped': 0, 'status': 'success'}
+{'id': 4, 'source_file': 'campaign_metadata.csv', 'ingested_at': '2026-08-20 01:31:37', 'file_size_bytes': 1554, 'file_modified_time': '2026-05-22T11:55:39', 'records_loaded': 24, 'records_skipped': 0, 'status': 'success'}
+```` 

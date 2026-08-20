@@ -171,8 +171,8 @@ def transform_meta_ads(records):
             "spend_amount": float(r["spend_usd"].strip()),
             "original_currency": original_currency,  # NULL if missing
             "currency_missing": currency_missing,     # 1 if missing
-            "conversions": float(r["conversions"].strip()),
-            "conversion_value_amount": float(r["conversion_value_usd"].strip()),  # original
+            "conversions": float(r["conversions"].strip()) if r.get("conversions", "").strip() else 0.0,
+            "conversion_value_amount": float(r["conversion_value_usd"].strip()) if r.get("conversion_value_usd", "").strip() else 0.0,
             "platform": "meta",
         }
 
