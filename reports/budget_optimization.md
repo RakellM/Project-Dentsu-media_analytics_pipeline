@@ -34,11 +34,20 @@
 **Recommendation**: Test increasing Google budget by 10-15%. If ROI holds, blended ROI could improve.
 
 
-### 5. Optimize Store Visit Timing
+### 5. Optimize Store Visit Timing and Regional Allocation
 
-**Finding**: Cost per store visit ranges from \$2.61 (week 4) to \$4.63 (week 16), a 44% difference.
+**Finding**: Cost per store visit varies significantly:
+- **East region**: $2.34 avg — most efficient (55% cheaper than National)
+- **West region**: $3.09 avg — efficient
+- **National**: $5.22 avg — least efficient, but covers all 15 DMAs
+- Best: West week 2 at $0.38 vs Worst: National week 13 at $11.00
 
-**Recommendation**: Shift some spend to off-peak periods. A 10% reallocation could save thousands in customer acquisition costs.
+**Recommendation**: 
+1. Investigate why East regional campaigns achieve 55% lower cost per visit
+2. Consider extending East/West regional campaigns beyond week 16
+3. Analyze National efficiency — are costs diluted across too many DMAs?
+
+**Expected Impact**: If 10% of National spend ($444K) achieved East-level efficiency ($2.34 vs $5.22), savings of ~$128K in customer acquisition costs.
 
 
 ## ROI Summary Table

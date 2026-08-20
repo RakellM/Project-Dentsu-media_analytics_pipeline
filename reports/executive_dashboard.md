@@ -46,9 +46,17 @@
 
 | Metric | Value |
 |--------|-------|
-| Total Attributed Store Visits | 5.7M+ |
-| Average Cost per Visit | $3.50 |
-| Best Week (Lowest Cost/Visit) | Week 4 ($2.61) |
+| Total Attributed Store Visits | 1.35M |
+| Average Cost per Visit (National) | $5.22 |
+| Average Cost per Visit (East) | $2.34 |
+| Average Cost per Visit (West) | $3.09 |
+| Most Efficient | East ($2.34 avg) |
+| Least Efficient | National ($5.22 avg) |
+| Best Week (Lowest Cost/Visit) | Week 2, West ($0.38) |
+| Highest Week (Cost/Visit) | Week 13, National ($11.00) |
+
+**Insight**: East region is 55% more efficient than National ($2.34 vs $5.22 cost per visit).
+Regional campaigns (East/West) ran only weeks 2-16, while National ran the full period.
 
 ### Budget Compliance Snapshot
 

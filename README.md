@@ -1,5 +1,25 @@
 # Project Dentsu: Media Analytics Pipeline
 
+## License
+MIT
+
+## Author
+Raquel Marques
+
+## Quick Links
+- [Architecture](#architecture)
+- [Data Model](#data-model)
+- [Data Quality](#data-quality-issues-handled)
+- [Analysis Results](#analysis-results)
+- [Testing](#testing)
+
+
+## Prerequisites
+- Python 3.8+
+- SQLite3 (included with Python)
+- No external dependencies required
+    - pandas and matplotlib are for analysis at the end
+
 ## Setup
 1. Place raw data files in `data/raw/`:
    - meta_ads_daily.csv
@@ -45,21 +65,21 @@ media-analytics-pipeline/
 ├── testing/               # Test scripts (not commited)
 │
 ├── reports/    
-    ├── executive_dashboard.md
-    ├── budget_optimization.md 
-    └── validate_gold.sql      
+│   ├── executive_dashboard.md
+│   ├── budget_optimization.md 
+│   └── data_quality_notes.md      
 │
 ├── business_queries/
-    ├── 01-Blended_CPA.sql
-    ├── 01-chart.py
-    ├── 02-Spend_Growth.sql
-    ├── 02-chart.py
-    ├── 03-Spend_vs_Store_Visits.sql
-    ├── 03-chart.py
-    ├── 04-Campaign_Exceeding_Budget.sql
-    ├── 04-chart.py
-    ├── 05-ROI.sql
-    └── 05-chart.py
+│   ├── 01-Blended_CPA.sql
+│   ├── 01-chart.py
+│   ├── 02-Spend_Growth.sql
+│   ├── 02-chart.py
+│   ├── 03-Spend_vs_Store_Visits.sql
+│   ├── 03-chart.py
+│   ├── 04-Campaign_Exceeding_Budget.sql
+│   ├── 04-chart.py
+│   ├── 05-ROI.sql
+│   └── 05-chart.py
 │
 └── outputs/               # Generated reports, charts
 ```
@@ -285,8 +305,7 @@ Production Monitoring Plan
 
 ![Cost per Visit](outputs/cost_per_visit.png)
 
-> Cost per store visit ranges from $2.61 to $4.63. 
-> Efficient spend-to-visit relationship, with Q1 showing lower cost per visit.
+> Cost per store visit ranges from $0.38 (West, week 2) to $11.00 (National, week 13)
 
 ### 4. Campaign Eceeding Budget
 
@@ -298,12 +317,27 @@ Production Monitoring Plan
 > 2 campaigns excluded due to no spend data (1156, 1251)
 > 7 campaigns within budget (5 of these have estimated budgets)
 
+
+### 5. ROI by Product Line
+
+![ROI by Product](outputs/roi_by_product.png)
+
+> All product lines deliver 2.5x-2.7x ROI
+> Seasonal and Furniture tie for highest at 2.72x
+> Appliances receives most spend ($2.71M) but has lower ROI (2.61x)
+
+
 ---
 
+## Supporting Documents
 
-[Project Status](./ProjectStatus.md)
-[Data Quality Notes](./reports/data_quality_notes.md)
-[Production Plan](./monitoring/production_plan.md)
+| Document | Description |
+|----------|-------------|
+| [Project Status](./ProjectStatus.md) | Development progress and issue tracking |
+| [Data Quality Notes](./reports/data_quality_notes.md) | Data issues and confidence levels |
+| [Production Plan](./monitoring/production_plan.md) | Monitoring and alerting strategy |
+| [Executive Dashboard](./reports/executive_dashboard.md) | Stakeholder summary |
+| [Budget Optimization](./reports/budget_optimization.md) | Actionable investment insights |
 
 ---
 
