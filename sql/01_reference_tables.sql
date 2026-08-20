@@ -101,3 +101,32 @@ SELECT DISTINCT
     brand || '_' || product_line || '_' || region AS campaign_name_standardized
 FROM raw_campaign_metadata;
 
+
+
+-- DMA to Region mapping (manual assignment)
+CREATE TABLE IF NOT EXISTS ref_dma_region_map (
+    dma_code TEXT PRIMARY KEY,
+    dma_name TEXT,
+    mapped_region TEXT,
+    mapping_source TEXT DEFAULT 'manual'
+);
+
+INSERT OR IGNORE INTO ref_dma_region_map (dma_code, dma_name, mapped_region) VALUES
+    -- East Coast
+    ('501', 'New York', 'East'),
+    ('504', 'Philadelphia', 'East'),
+    ('505', 'Detroit', 'East'),
+    ('506', 'Boston', 'East'),
+    ('511', 'Washington DC', 'East'),
+    ('524', 'Atlanta', 'East'),
+    ('528', 'Miami-Ft. Lauderdale', 'East'),
+    ('539', 'Tampa-St. Petersburg', 'East'),
+    ('602', 'Chicago', 'East'),
+    
+    -- West Coast
+    ('618', 'Houston', 'West'),
+    ('623', 'Dallas-Ft. Worth', 'West'),
+    ('753', 'Phoenix', 'West'),
+    ('803', 'Los Angeles', 'West'),
+    ('807', 'San Francisco-Oakland-San Jose', 'West'),
+    ('819', 'Seattle-Tacoma', 'West');

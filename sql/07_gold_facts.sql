@@ -22,12 +22,17 @@ FROM stg_daily_performance;
 
 -- Store Visits Fact
 -- Grain: one row per DMA per day
+-- Recreate fact_store_visits with region
+-- DROP TABLE IF EXISTS fact_store_visits;
 CREATE TABLE IF NOT EXISTS fact_store_visits AS
 SELECT
-    date,
-    dma_code,
-    attributed_visits,
-    attribution_window_days,
-    is_zero_filled
-FROM stg_store_visits;
-
+    sv.date,
+    sv.dma_code,
+    dm.dma_name,
+    dm.mapped_region,
+    sv.attributed_visits,
+    sv.attribution_window_days,
+    sv.is_zero_filled
+FROM stg_store_visits AS sv
+JOIN ref_dma_region_map AS dm 
+    ON sv.dma_code = dm.dma_code;
