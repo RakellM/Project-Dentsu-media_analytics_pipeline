@@ -133,3 +133,4 @@ This document outlines all data integrity issues found during pipeline developme
 2. **DMA mapping validation**: Confirm East/West assignments with business stakeholders
 3. **Budget source**: Query finance system for actual campaign budgets
 4. **Store visits attribution**: Clarify if missing dates = zero visits or unreported data
+
