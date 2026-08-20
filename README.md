@@ -151,4 +151,39 @@ Second load: {'meta_ads': {'status': 'unchanged', 'inserted': 0, 'skipped': 3603
 {'id': 2, 'source_file': 'google_ads_daily.json', 'ingested_at': '2026-08-20 01:31:37', 'file_size_bytes': 332387, 'file_modified_time': '2026-05-22T11:55:39', 'records_loaded': 1028, 'records_skipped': 0, 'status': 'success'}
 {'id': 3, 'source_file': 'store_visits.csv', 'ingested_at': '2026-08-20 01:31:37', 'file_size_bytes': 82645, 'file_modified_time': '2026-05-22T11:55:39', 'records_loaded': 2300, 'records_skipped': 0, 'status': 'success'}
 {'id': 4, 'source_file': 'campaign_metadata.csv', 'ingested_at': '2026-08-20 01:31:37', 'file_size_bytes': 1554, 'file_modified_time': '2026-05-22T11:55:39', 'records_loaded': 24, 'records_skipped': 0, 'status': 'success'}
-```` 
+```
+
+<br>
+
+
+### 4. Silver Layer (SQL)
+
+```text
+BRONZE (raw_*):
+- Raw data + flags + load timestamp
+- Original values preserved
+
+SILVER (stg_*, ref_*):
+- stg_meta_ads        → currency converted
+- stg_google_ads      → micros converted
+- stg_daily_performance → unified Meta + Google
+- stg_store_visits    → missing dates filled
+- ref_calendar        → date reference
+- ref_exchange_rates  → currency rates
+- ref_dma_list        → distinct DMAs
+- ref_campaign_list   → campaign attributes (dimension source)
+```
+
+<br>
+
+#### 5. Gold Layer (SQL)
+
+```text
+GOLD (dim_*, fact_*):
+- dim_campaign        → built from ref_campaign_list
+- dim_dma             → built from ref_dma_list
+- dim_date            → built from ref_calendar
+- fact_daily_performance → built from stg_daily_performance
+- fact_store_visits   → built from stg_store_visits
+```
+
