@@ -7,7 +7,8 @@ SELECT
     campaign_id,
     brand,
     product_line,
-    region
+    region, 
+    campaign_name_standardized
 FROM ref_campaign_list;
 
 
