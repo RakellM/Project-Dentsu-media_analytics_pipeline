@@ -240,6 +240,10 @@ Production Monitoring Plan
 
 ## Analysis Results
 
+[Executive Dashboard](./reports/executive_dashboard.md)
+
+[Budget optimization](./reports/budget_optimization.md)
+
 ### 1. Blended CPA
 
 ![CPA Trend](outputs/cpa_trend.png)
@@ -277,3 +281,43 @@ Production Monitoring Plan
 
 
 [Project Status](./ProjectStatus.md)
+[Data Quality Notes](./reports/data_quality_notes.md)
+[Production Plan](./monitoring/production_plan.md)
+
+---
+
+## Testing
+
+### What Was Tested
+
+During development, the following were manually validated:
+
+| Component | Test | Result |
+|-----------|------|--------|
+| Extraction | Row counts per source | ✔️ 3,603 + 1,055 + 2,300 + 24 |
+| Transformation | Google dedup (timestamp → max impressions) | ✔️ 1,055 → 1,028 |
+| Transformation | Currency flagging (missing, CAD, GBP) | ✔️ 133 + 95 + 57 |
+| Load | Idempotency (second run = 0 new) | ✔️ All sources "unchanged" |
+| Load | File metadata check (size + modified time) | ✔️ Skips unchanged files |
+| Silver | Meta currency conversion | ✔️ 0 null, 0 negative spend |
+| Silver | Google micros conversion | ✔️ 0 null, correct totals |
+| Silver | Unified table | ✔️ 4,631 records |
+| Silver | Store visits date fill | ✔️ 400 zero-filled |
+| Gold | Dimensions row counts | ✔️ 24 + 15 + 366 |
+| Gold | Facts row counts | ✔️ 4,631 + 2,700 |
+| Queries | All 4 business questions | ✔️ Returns expected results |
+
+### Validation Built Into Pipeline
+
+The `run_pipeline.py` script includes automatic validation:
+- Table row counts for all 13 tables
+- Null/negative spend check
+- Pipeline tracking verification
+
+### What Would Be Added in Production
+
+- **Unit tests** (pytest): For transform functions, dedup logic, currency conversion
+- **Integration tests**: End-to-end pipeline with sample data
+- **Data quality tests** (Great Expectations): Automated validation of data contracts
+- **CI/CD pipeline**: Automated testing on every commit
+- **Regression tests**: Compare results against known-good baselines
