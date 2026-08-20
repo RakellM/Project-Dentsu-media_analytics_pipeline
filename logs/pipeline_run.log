@@ -1,0 +1,152 @@
+2026-08-20 00:57:20,439 - __main__ - INFO - ===> STARTING MEDIA ANALYTICS PIPELINE
+2026-08-20 00:57:20,440 - __main__ - INFO - 
+[STEP 1] EXTRACTION
+2026-08-20 00:57:20,440 - src.extract - INFO - Starting extraction
+2026-08-20 00:57:20,440 - src.extract - INFO - Extracting Meta Ads data from C:\Users\kel_m\OneDrive\Project_Code\JobProject-Dentsu\data\raw\meta_ads_daily.csv
+2026-08-20 00:57:20,455 - src.extract - INFO - Extracted 3603 rows from Meta Ads
+2026-08-20 00:57:20,455 - src.extract - INFO -   meta_ads: 3603 records extracted
+2026-08-20 00:57:20,455 - src.extract - INFO - Extracting Google Ads data from C:\Users\kel_m\OneDrive\Project_Code\JobProject-Dentsu\data\raw\google_ads_daily.json
+2026-08-20 00:57:20,462 - src.extract - INFO - Extracted 1055 rows from Google Ads
+2026-08-20 00:57:20,462 - src.extract - INFO -   google_ads: 1055 records extracted
+2026-08-20 00:57:20,463 - src.extract - INFO - Extracting store visits data from C:\Users\kel_m\OneDrive\Project_Code\JobProject-Dentsu\data\raw\store_visits.csv
+2026-08-20 00:57:20,468 - src.extract - INFO - Extracted 2300 rows from store visits
+2026-08-20 00:57:20,468 - src.extract - INFO -   store_visits: 2300 records extracted
+2026-08-20 00:57:20,468 - src.extract - INFO - Extracting campaign metadata from C:\Users\kel_m\OneDrive\Project_Code\JobProject-Dentsu\data\raw\campaign_metadata.csv
+2026-08-20 00:57:20,468 - src.extract - INFO - Extracted 24 rows from campaign metadata
+2026-08-20 00:57:20,469 - src.extract - INFO -   campaign_metadata: 24 records extracted
+2026-08-20 00:57:20,469 - __main__ - INFO -   Extracted: {'meta_ads': 3603, 'google_ads': 1055, 'store_visits': 2300, 'campaign_metadata': 24}
+2026-08-20 00:57:20,469 - __main__ - INFO - 
+[STEP 2] TRANSFORMATION
+2026-08-20 00:57:20,469 - src.transform - INFO - Starting full transformation
+2026-08-20 00:57:20,469 - src.transform - INFO - Transforming 3603 Meta Ads records
+2026-08-20 00:57:20,487 - src.transform - INFO - Transformed 3603 Meta Ads records
+2026-08-20 00:57:20,488 - src.transform - INFO - Transforming 1055 Google Ads records
+2026-08-20 00:57:20,520 - src.transform - INFO - Transforming 2300 store visit records
+2026-08-20 00:57:20,522 - src.transform - INFO - Transformed 2300 store visit records
+2026-08-20 00:57:20,522 - src.transform - INFO - Transforming 24 campaign metadata records
+2026-08-20 00:57:20,522 - src.transform - INFO - Transformed 24 campaign metadata records
+2026-08-20 00:57:20,523 - __main__ - INFO -   Transformed: {'meta_ads': 3603, 'google_ads': 1028, 'store_visits': 2300, 'campaign_metadata': 24}
+2026-08-20 00:57:20,523 - __main__ - INFO - 
+[STEP 3] LOADING TO SQLITE
+2026-08-20 00:57:20,523 - src.load - INFO - Starting data load
+2026-08-20 00:57:20,525 - src.load - INFO - Raw tables created/verified
+2026-08-20 00:57:20,525 - src.load - INFO -   meta_ads: FILE UNCHANGED — skipping
+2026-08-20 00:57:20,526 - src.load - INFO -   google_ads: FILE UNCHANGED — skipping
+2026-08-20 00:57:20,526 - src.load - INFO -   store_visits: FILE UNCHANGED — skipping
+2026-08-20 00:57:20,526 - src.load - INFO -   campaign_metadata: FILE UNCHANGED — skipping
+2026-08-20 00:57:20,526 - src.load - INFO - Load complete: {'meta_ads': {'status': 'unchanged', 'inserted': 0, 'skipped': 3603}, 'google_ads': {'status': 'unchanged', 'inserted': 0, 'skipped': 1028}, 'store_visits': {'status': 'unchanged', 'inserted': 0, 'skipped': 2300}, 'campaign_metadata': {'status': 'unchanged', 'inserted': 0, 'skipped': 24}}
+2026-08-20 00:57:20,527 - __main__ - INFO -   Load results: {'meta_ads': {'status': 'unchanged', 'inserted': 0, 'skipped': 3603}, 'google_ads': {'status': 'unchanged', 'inserted': 0, 'skipped': 1028}, 'store_visits': {'status': 'unchanged', 'inserted': 0, 'skipped': 2300}, 'campaign_metadata': {'status': 'unchanged', 'inserted': 0, 'skipped': 24}}
+2026-08-20 00:57:20,527 - __main__ - INFO - 
+[STEP 4] SQL TRANSFORMATIONS
+2026-08-20 00:57:20,527 - __main__ - INFO - Executing SQL: sql/01_reference_tables.sql
+2026-08-20 00:57:20,530 - __main__ - INFO - Completed SQL: sql/01_reference_tables.sql
+2026-08-20 00:57:20,530 - __main__ - INFO - Executing SQL: sql/02_silver_meta_ads.sql
+2026-08-20 00:57:20,556 - __main__ - INFO - Completed SQL: sql/02_silver_meta_ads.sql
+2026-08-20 00:57:20,556 - __main__ - INFO - Executing SQL: sql/03_silver_google_ads.sql
+2026-08-20 00:57:20,564 - __main__ - INFO - Completed SQL: sql/03_silver_google_ads.sql
+2026-08-20 00:57:20,564 - __main__ - INFO - Executing SQL: sql/04_silver_unified.sql
+2026-08-20 00:57:20,567 - __main__ - INFO - Completed SQL: sql/04_silver_unified.sql
+2026-08-20 00:57:20,567 - __main__ - INFO - Executing SQL: sql/05_silver_store_visits.sql
+2026-08-20 00:57:20,580 - __main__ - INFO - Completed SQL: sql/05_silver_store_visits.sql
+2026-08-20 00:57:20,580 - __main__ - INFO - Executing SQL: sql/06_gold_dimensions.sql
+2026-08-20 00:57:20,581 - __main__ - INFO - Completed SQL: sql/06_gold_dimensions.sql
+2026-08-20 00:57:20,581 - __main__ - INFO - Executing SQL: sql/07_gold_facts.sql
+2026-08-20 00:57:20,581 - __main__ - INFO - Completed SQL: sql/07_gold_facts.sql
+2026-08-20 00:57:20,582 - __main__ - INFO - Executing SQL: sql/08_log_campaign_name_changes.sql
+2026-08-20 00:57:20,591 - __main__ - INFO - Completed SQL: sql/08_log_campaign_name_changes.sql
+2026-08-20 00:57:20,591 - __main__ - INFO - 
+[STEP 5] VALIDATION
+2026-08-20 00:57:20,592 - __main__ - INFO - Running validation checks
+2026-08-20 00:57:20,593 - __main__ - INFO -   raw_meta_ads: 3603 rows
+2026-08-20 00:57:20,594 - __main__ - INFO -   raw_google_ads: 1028 rows
+2026-08-20 00:57:20,594 - __main__ - INFO -   raw_store_visits: 2300 rows
+2026-08-20 00:57:20,594 - __main__ - INFO -   raw_campaign_metadata: 24 rows
+2026-08-20 00:57:20,595 - __main__ - INFO -   stg_meta_ads: 3603 rows
+2026-08-20 00:57:20,595 - __main__ - INFO -   stg_google_ads: 1028 rows
+2026-08-20 00:57:20,596 - __main__ - INFO -   stg_daily_performance: 4631 rows
+2026-08-20 00:57:20,596 - __main__ - INFO -   stg_store_visits: 2700 rows
+2026-08-20 00:57:20,596 - __main__ - INFO -   dim_campaign: 24 rows
+2026-08-20 00:57:20,596 - __main__ - INFO -   dim_dma: 15 rows
+2026-08-20 00:57:20,596 - __main__ - INFO -   dim_date: 366 rows
+2026-08-20 00:57:20,597 - __main__ - INFO -   fact_daily_performance: 4631 rows
+2026-08-20 00:57:20,597 - __main__ - INFO -   fact_store_visits: 2700 rows
+2026-08-20 00:57:20,599 - __main__ - INFO - 
+
+2026-08-20 00:57:20,599 - __main__ - INFO - ===> PIPELINE COMPLETE
+2026-08-20 00:59:55,427 - __main__ - INFO - ===> STARTING MEDIA ANALYTICS PIPELINE
+2026-08-20 00:59:55,427 - __main__ - INFO - 
+[STEP 1] EXTRACTION
+2026-08-20 00:59:55,427 - src.extract - INFO - Starting extraction
+2026-08-20 00:59:55,427 - src.extract - INFO - Extracting Meta Ads data from C:\Users\kel_m\OneDrive\Project_Code\JobProject-Dentsu\data\raw\meta_ads_daily.csv
+2026-08-20 00:59:55,443 - src.extract - INFO - Extracted 3603 rows from Meta Ads
+2026-08-20 00:59:55,443 - src.extract - INFO -   meta_ads: 3603 records extracted
+2026-08-20 00:59:55,443 - src.extract - INFO - Extracting Google Ads data from C:\Users\kel_m\OneDrive\Project_Code\JobProject-Dentsu\data\raw\google_ads_daily.json
+2026-08-20 00:59:55,449 - src.extract - INFO - Extracted 1055 rows from Google Ads
+2026-08-20 00:59:55,449 - src.extract - INFO -   google_ads: 1055 records extracted
+2026-08-20 00:59:55,449 - src.extract - INFO - Extracting store visits data from C:\Users\kel_m\OneDrive\Project_Code\JobProject-Dentsu\data\raw\store_visits.csv
+2026-08-20 00:59:55,454 - src.extract - INFO - Extracted 2300 rows from store visits
+2026-08-20 00:59:55,454 - src.extract - INFO -   store_visits: 2300 records extracted
+2026-08-20 00:59:55,454 - src.extract - INFO - Extracting campaign metadata from C:\Users\kel_m\OneDrive\Project_Code\JobProject-Dentsu\data\raw\campaign_metadata.csv
+2026-08-20 00:59:55,454 - src.extract - INFO - Extracted 24 rows from campaign metadata
+2026-08-20 00:59:55,455 - src.extract - INFO -   campaign_metadata: 24 records extracted
+2026-08-20 00:59:55,455 - __main__ - INFO -   Extracted: {'meta_ads': 3603, 'google_ads': 1055, 'store_visits': 2300, 'campaign_metadata': 24}
+2026-08-20 00:59:55,455 - __main__ - INFO - 
+[STEP 2] TRANSFORMATION
+2026-08-20 00:59:55,455 - src.transform - INFO - Starting full transformation
+2026-08-20 00:59:55,455 - src.transform - INFO - Transforming 3603 Meta Ads records
+2026-08-20 00:59:55,474 - src.transform - INFO - Transformed 3603 Meta Ads records
+2026-08-20 00:59:55,474 - src.transform - INFO - Transforming 1055 Google Ads records
+2026-08-20 00:59:55,476 - src.transform - INFO - Transformed 1055 Google Ads records -> 1028 after deduplication
+2026-08-20 00:59:55,477 - src.transform - INFO - Transforming 2300 store visit records
+2026-08-20 00:59:55,478 - src.transform - INFO - Transformed 2300 store visit records
+2026-08-20 00:59:55,478 - src.transform - INFO - Transforming 24 campaign metadata records
+2026-08-20 00:59:55,478 - src.transform - INFO - Transformed 24 campaign metadata records
+2026-08-20 00:59:55,479 - __main__ - INFO -   Transformed: {'meta_ads': 3603, 'google_ads': 1028, 'store_visits': 2300, 'campaign_metadata': 24}
+2026-08-20 00:59:55,479 - __main__ - INFO - 
+[STEP 3] LOADING TO SQLITE
+2026-08-20 00:59:55,479 - src.load - INFO - Starting data load
+2026-08-20 00:59:55,480 - src.load - INFO - Raw tables created/verified
+2026-08-20 00:59:55,481 - src.load - INFO -   meta_ads: FILE UNCHANGED — skipping
+2026-08-20 00:59:55,481 - src.load - INFO -   google_ads: FILE UNCHANGED — skipping
+2026-08-20 00:59:55,481 - src.load - INFO -   store_visits: FILE UNCHANGED — skipping
+2026-08-20 00:59:55,481 - src.load - INFO -   campaign_metadata: FILE UNCHANGED — skipping
+2026-08-20 00:59:55,481 - src.load - INFO - Load complete: {'meta_ads': {'status': 'unchanged', 'inserted': 0, 'skipped': 3603}, 'google_ads': {'status': 'unchanged', 'inserted': 0, 'skipped': 1028}, 'store_visits': {'status': 'unchanged', 'inserted': 0, 'skipped': 2300}, 'campaign_metadata': {'status': 'unchanged', 'inserted': 0, 'skipped': 24}}
+2026-08-20 00:59:55,481 - __main__ - INFO -   Load results: {'meta_ads': {'status': 'unchanged', 'inserted': 0, 'skipped': 3603}, 'google_ads': {'status': 'unchanged', 'inserted': 0, 'skipped': 1028}, 'store_visits': {'status': 'unchanged', 'inserted': 0, 'skipped': 2300}, 'campaign_metadata': {'status': 'unchanged', 'inserted': 0, 'skipped': 24}}
+2026-08-20 00:59:55,481 - __main__ - INFO - 
+[STEP 4] SQL TRANSFORMATIONS
+2026-08-20 00:59:55,482 - __main__ - INFO - Executing SQL: sql/01_reference_tables.sql
+2026-08-20 00:59:55,484 - __main__ - INFO - Completed SQL: sql/01_reference_tables.sql
+2026-08-20 00:59:55,484 - __main__ - INFO - Executing SQL: sql/02_silver_meta_ads.sql
+2026-08-20 00:59:55,511 - __main__ - INFO - Completed SQL: sql/02_silver_meta_ads.sql
+2026-08-20 00:59:55,511 - __main__ - INFO - Executing SQL: sql/03_silver_google_ads.sql
+2026-08-20 00:59:55,519 - __main__ - INFO - Completed SQL: sql/03_silver_google_ads.sql
+2026-08-20 00:59:55,519 - __main__ - INFO - Executing SQL: sql/04_silver_unified.sql
+2026-08-20 00:59:55,522 - __main__ - INFO - Completed SQL: sql/04_silver_unified.sql
+2026-08-20 00:59:55,522 - __main__ - INFO - Executing SQL: sql/05_silver_store_visits.sql
+2026-08-20 00:59:55,533 - __main__ - INFO - Completed SQL: sql/05_silver_store_visits.sql
+2026-08-20 00:59:55,533 - __main__ - INFO - Executing SQL: sql/06_gold_dimensions.sql
+2026-08-20 00:59:55,534 - __main__ - INFO - Completed SQL: sql/06_gold_dimensions.sql
+2026-08-20 00:59:55,534 - __main__ - INFO - Executing SQL: sql/07_gold_facts.sql
+2026-08-20 00:59:55,534 - __main__ - INFO - Completed SQL: sql/07_gold_facts.sql
+2026-08-20 00:59:55,535 - __main__ - INFO - Executing SQL: sql/08_log_campaign_name_changes.sql
+2026-08-20 00:59:55,543 - __main__ - INFO - Completed SQL: sql/08_log_campaign_name_changes.sql
+2026-08-20 00:59:55,544 - __main__ - INFO - 
+[STEP 5] VALIDATION
+2026-08-20 00:59:55,546 - __main__ - INFO - Running validation checks
+2026-08-20 00:59:55,547 - __main__ - INFO -   raw_meta_ads: 3603 rows
+2026-08-20 00:59:55,547 - __main__ - INFO -   raw_google_ads: 1028 rows
+2026-08-20 00:59:55,547 - __main__ - INFO -   raw_store_visits: 2300 rows
+2026-08-20 00:59:55,548 - __main__ - INFO -   raw_campaign_metadata: 24 rows
+2026-08-20 00:59:55,548 - __main__ - INFO -   stg_meta_ads: 3603 rows
+2026-08-20 00:59:55,548 - __main__ - INFO -   stg_google_ads: 1028 rows
+2026-08-20 00:59:55,549 - __main__ - INFO -   stg_daily_performance: 4631 rows
+2026-08-20 00:59:55,549 - __main__ - INFO -   stg_store_visits: 2700 rows
+2026-08-20 00:59:55,549 - __main__ - INFO -   dim_campaign: 24 rows
+2026-08-20 00:59:55,549 - __main__ - INFO -   dim_dma: 15 rows
+2026-08-20 00:59:55,550 - __main__ - INFO -   dim_date: 366 rows
+2026-08-20 00:59:55,550 - __main__ - INFO -   fact_daily_performance: 4631 rows
+2026-08-20 00:59:55,550 - __main__ - INFO -   fact_store_visits: 2700 rows
+2026-08-20 00:59:55,551 - __main__ - INFO -  [OK] No null or negative spend values
+2026-08-20 00:59:55,551 - __main__ - INFO - 
+
+2026-08-20 00:59:55,551 - __main__ - INFO - ===> PIPELINE COMPLETE
