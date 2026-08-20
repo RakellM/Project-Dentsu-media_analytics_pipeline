@@ -10,10 +10,6 @@
 3. Database will be created at `data/pipeline.db`
 
 
-
-
-
-
 ## Project Structure
 
 ```
@@ -21,10 +17,13 @@ media-analytics-pipeline/
 ├── README.md
 ├── config.py
 ├── run_pipeline.py
+├── requirements.txt
+│
 ├── src/
 │   ├── extract.py         # Raw file readers
 │   ├── transform.py       # Type conversion, flags
 │   └── load.py            # SQLite loading, incremental
+│
 ├── sql/
 │   ├── 01_reference_tables.sql
 │   ├── 02_silver_meta_ads.sql
@@ -34,13 +33,35 @@ media-analytics-pipeline/
 │   ├── 06_gold_dimensions.sql
 │   ├── 07_gold_facts.sql
 │   ├── 08_log_campaign_name_changes.sql
-│   └── 09_analysis_queries.sql
+│   ├── 09_analysis_queries.sql
+│   ├── validate_silver.sql
+│   └── validate_gold.sql
+│
 ├── data/
 │   ├── raw/               # Source files (not committed)
 │   ├── staged/            # Intermediate (not committed)
 │   └── pipeline.db        # SQLite database
-├── testing/               # Test scripts
-└── outputs/               # Generated reports
+│
+├── testing/               # Test scripts (not commited)
+│
+├── reports/    
+    ├── executive_dashboard.md
+    ├── budget_optimization.md 
+    └── validate_gold.sql      
+│
+├── business_queries/
+    ├── 01-Blended_CPA.sql
+    ├── 01-chart.py
+    ├── 02-Spend_Growth.sql
+    ├── 02-chart.py
+    ├── 03-Spend_vs_Store_Visits.sql
+    ├── 03-chart.py
+    ├── 04-Campaign_Exceeding_Budget.sql
+    ├── 04-chart.py
+    ├── 05-ROI.sql
+    └── 05-chart.py
+│
+└── outputs/               # Generated reports, charts
 ```
 
 
