@@ -56,6 +56,68 @@ media-analytics-pipeline/
 | Silver | Cleaned, converted, unified | stg_*, ref_*, log_* |
 | Gold | Business-ready dimensions and facts | dim_*, fact_* |
 
+
+#### Database Structure
+
+##### Tables Overview
+
+| Layer | Table | Rows | Grain |
+|-------|-------|------|-------|
+| Bronze | `raw_meta_ads` | 3,603 | One row per ad per day per objective per placement |
+| Bronze | `raw_google_ads` | 1,028 | One row per campaign per day per channel |
+| Bronze | `raw_store_visits` | 2,300 | One row per DMA per day |
+| Bronze | `raw_campaign_metadata` | 24 | One row per campaign |
+| Silver | `ref_calendar` | 366 | One row per date |
+| Silver | `ref_exchange_rates` | 18 | One row per currency per month |
+| Silver | `ref_dma_region_map` | 15 | One row per DMA |
+| Silver | `ref_campaign_list` | 24 | One row per campaign |
+| Silver | `stg_meta_ads` | 3,603 | Same as raw |
+| Silver | `stg_google_ads` | 1,028 | Same as raw |
+| Silver | `stg_daily_performance` | 4,631 | One row per campaign per day per platform per ad |
+| Silver | `stg_store_visits` | 2,700 | One row per DMA per day (zero-filled) |
+| Gold | `dim_campaign` | 24 | One row per campaign |
+| Gold | `dim_dma` | 15 | One row per DMA |
+| Gold | `dim_date` | 366 | One row per date |
+| Gold | `fact_daily_performance` | 4,631 | One row per campaign per day per platform per ad |
+| Gold | `fact_store_visits` | 2,700 | One row per DMA per day |
+
+
+
+##### Column Reference
+
+**dim_campaign**
+| Column | Type | Description |
+|--------|------|-------------|
+| campaign_id | TEXT | Primary key |
+| brand | TEXT | Brand name |
+| product_line | TEXT | Product category |
+| region | TEXT | National, East, or West |
+| campaign_name_standardized | TEXT | `brand_product_line_region` |
+
+**fact_daily_performance**
+| Column | Type | Description |
+|--------|------|-------------|
+| date | TEXT | Date of performance |
+| campaign_id | TEXT | FK to dim_campaign |
+| platform | TEXT | meta or google |
+| impressions | INTEGER | Ad impressions |
+| clicks | INTEGER | Ad clicks |
+| spend_usd | REAL | Spend in USD |
+| conversions | REAL | Conversions (fractional for Google) |
+| conversion_value_usd | REAL | Conversion value in USD |
+
+**fact_store_visits**
+| Column | Type | Description |
+|--------|------|-------------|
+| date | TEXT | Date of visit |
+| dma_code | TEXT | FK to dim_dma |
+| mapped_region | TEXT | East or West |
+| attributed_visits | INTEGER | Attributed store visits |
+| attribution_window_days | INTEGER | 7 or 28 |
+| is_zero_filled | INTEGER | 1 if filled, 0 if actual |
+
+
+
 <br>
 
 ### Pipeline Flow
@@ -114,7 +176,11 @@ fact_store_visits.date → dim_date.date
 
 **Store Visits**
 - Missing dates: Zero-filled via cross join of calendar × DMA list. 400 records filled
-- DMA mapping: 15 DMAs identified. Mapping to campaign regions pending
+- DMA mapping: Created `ref_dma_region_map` with manual assignment of 15 DMAs to East/West regions
+  - East: New York, Philadelphia, Detroit, Boston, Washington DC, Atlanta, Miami, Tampa, Chicago (9 DMAs)
+  - West: Houston, Dallas, Phoenix, Los Angeles, San Francisco, Seattle (6 DMAs)
+  - National campaigns match all 15 DMAs
+- **Join strategy**: National campaigns → all DMAs; East campaigns → East DMAs; West campaigns → West DMAs
 
 **Campaign Metadata**
 - Missing budgets: 9 of 24 campaigns missing budget. Flagged with budget_available = 0
@@ -132,6 +198,8 @@ fact_store_visits.date → dim_date.date
 | Name resolution | Metadata attributes | Source of truth, not platform-specific |
 | Deduplication | Python (bronze) | Known export bug, mechanical fix |
 | Incremental load | File metadata + primary keys | Skips unchanged files, prevents duplicates |
+| DMA mapping | Manual East/West assignment | No region field in store visits data |
+| Regional join | National = all DMAs, East/West = matching | Campaigns target specific regions |
 
 
 
