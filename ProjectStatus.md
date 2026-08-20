@@ -1,0 +1,124 @@
+## Project Status
+
+### 1. Extraction Layer ([`src/extract.py`](./src/extract.py))
+
+Reads all 4 raw data sources and returns standardized Python data structures.
+
+
+| Source | Format | Records | Key Parsing Logic |
+| --- | --- | --- | --- |
+| Meta Ads | CSV | 3,603 | Direct CSV read |
+| Google Ads | Newline-delimited JSON | 1,055 | Flattens nested campaign and metrics objects |
+| Store Visits | CSV | 2,300 | Direct CSV read |
+| Campaign Metadata | CSV | 24 | Direct CSV read |
+
+Design decisions:
+- Using `csv.DictReader` for simplicity, no external dependencies
+- JSON flattening happens at extraction so downstream layers receive consistent dicts
+- All raw values preserved as strings, type conversion happens in transform layer
+
+<br>
+
+### 2. Transformation Layer ([`src/transform.py`](./src/transform.py))
+
+**Campaign Metadata**
+- Strip whitespace from all text fields
+- Convert `budget_usd` from string to float
+- Flag missing budgets (`budget_available` = 0)
+- 9 out of 24 campaigns have missing budget (37.5%)
+
+**Store Visits**
+- Strip whitespace from text fields
+- Convert `attributed_visits` and `attribution_window_days` to integers
+- 15 distinct DMAs, date range Jan 1 - Jun 29, 2026
+
+**Meta Ads**
+- Strip whitespace from all text fields
+- Convert numeric fields to proper types (int/float)
+- Currency handling:
+    - Keep original currency and amount
+    - Flag missing currency (`currency_missing` = 1): 133 records
+    - No conversion in bronze layer: happens in SQL silver via exchange rate table
+    - Currency distribution: USD (3,318), CAD (95), GBP (57), missing (133)
+- Timestamp conversion: timestamp_pst → timestamp_utc (+8 hours)
+- Campaign names: kept as-is (original): resolution happens in SQL silver
+- Platform tag: `platform` = "meta"
+
+**Google Ads**
+- Strip whitespace from text fields
+- Convert numeric fields to proper types
+- Micros conversion: deferred to SQL silver, raw micros preserved in bronze
+- Duplicate handling: in progress
+    - Duplicate key: (`date`, `campaign_id`, `campaign_name`, `advertising_channel_type`)
+    - Strategy: Keep newest timestamp → if timestamps identical, keep max impressions
+    - Flag with `duplicate_combined` and `duplicate_count`
+
+
+<br>
+
+### 3. Load Layer ([`src/load.py`](./src/load.py))
+Loads transformed data into SQLite bronze tables with incremental logic.
+
+**File Metadata Check**
+- Compares file size and modified time against last successful ingestion
+- Unchanged files are skipped entirely (fast path)
+- Tracks ingestion history in _ingestion_log table
+
+**Primary Key Deduplication**
+
+| Table | Primary Key | 
+| --- | --- |
+| raw_meta_ads | (date, campaign_id, campaign_name, adset_id, ad_id, objective, placement) | 
+| raw_google_ads | (date, campaign_id, campaign_name, advertising_channel_type) | 
+| raw_store_visits | (date, dma_code) | 
+| raw_campaign_metadata | (campaign_id) | 
+
+
+**Test Results**
+- First load: all records inserted (3,603 + 1,028 + 2,300 + 24)
+- Second load: all sources skipped as "unchanged"
+- Ingestion log records every attempt with audit info
+
+```text
+\JobProject-Dentsu> py -m testing.7_test_load
+First load: {'meta_ads': {'status': 'success', 'inserted': 3603, 'skipped': 0}, 'google_ads': {'status': 'success', 'inserted': 1028, 'skipped': 0}, 'store_visits': {'status': 'success', 'inserted': 2300, 'skipped': 0}, 'campaign_metadata': {'status': 'success', 'inserted': 24, 'skipped': 0}}
+Second load: {'meta_ads': {'status': 'unchanged', 'inserted': 0, 'skipped': 3603}, 'google_ads': {'status': 'unchanged', 'inserted': 0, 'skipped': 1028}, 'store_visits': {'status': 'unchanged', 'inserted': 0, 'skipped': 2300}, 'campaign_metadata': {'status': 'unchanged', 'inserted': 0, 'skipped': 24}}
+{'id': 1, 'source_file': 'meta_ads_daily.csv', 'ingested_at': '2026-08-20 01:31:37', 'file_size_bytes': 536095, 'file_modified_time': '2026-05-22T11:55:39', 'records_loaded': 3603, 'records_skipped': 0, 'status': 'success'}
+{'id': 2, 'source_file': 'google_ads_daily.json', 'ingested_at': '2026-08-20 01:31:37', 'file_size_bytes': 332387, 'file_modified_time': '2026-05-22T11:55:39', 'records_loaded': 1028, 'records_skipped': 0, 'status': 'success'}
+{'id': 3, 'source_file': 'store_visits.csv', 'ingested_at': '2026-08-20 01:31:37', 'file_size_bytes': 82645, 'file_modified_time': '2026-05-22T11:55:39', 'records_loaded': 2300, 'records_skipped': 0, 'status': 'success'}
+{'id': 4, 'source_file': 'campaign_metadata.csv', 'ingested_at': '2026-08-20 01:31:37', 'file_size_bytes': 1554, 'file_modified_time': '2026-05-22T11:55:39', 'records_loaded': 24, 'records_skipped': 0, 'status': 'success'}
+```
+
+<br>
+
+
+### 4. Silver Layer (SQL)
+
+```text
+BRONZE (raw_*):
+- Raw data + flags + load timestamp
+- Original values preserved
+
+SILVER (stg_*, ref_*):
+- stg_meta_ads        → currency converted
+- stg_google_ads      → micros converted
+- stg_daily_performance → unified Meta + Google
+- stg_store_visits    → missing dates filled
+- ref_calendar        → date reference
+- ref_exchange_rates  → currency rates
+- ref_dma_list        → distinct DMAs
+- ref_campaign_list   → campaign attributes (dimension source)
+```
+
+<br>
+
+#### 5. Gold Layer (SQL)
+
+```text
+GOLD (dim_*, fact_*):
+- dim_campaign        → built from ref_campaign_list
+- dim_dma             → built from ref_dma_list
+- dim_date            → built from ref_calendar
+- fact_daily_performance → built from stg_daily_performance
+- fact_store_visits   → built from stg_store_visits
+```

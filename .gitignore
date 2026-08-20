@@ -2,3 +2,6 @@
 /given-files
 /testing
 /src/__pycache__/
+/__pycache__
+/.vscode
+
